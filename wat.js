@@ -1,30 +1,34 @@
-const settings = {'api_key': 'AIzaSyA7iZi70URK1fsqkjyLVFSaiE1iXtRv7tk',
-				  'url': 'https://www.googleapis.com/customsearch/v1?key=',
-				  'url_suffix': '&fields=kind,items(title)'};
-
 if (process.argv.length < 4) {
-	print_usage();
-	return;
+    print_usage();
+    return;
 }
+
+var question = process.argv[3];
+var fields = 'items(title, displayLink, snippet)';
+var cx = '013972680988251263703:slglaqoes_q';
 
 var request = require('request');
-var question = process.argv[3];
-var formatted_url = settings.url + settings.api_key + '&cx=017576662512468239146:omuauf_lfve&q=' + question + settings.url_suffix;
-console.log('asking the gods about "' + question + '"');
+var options = {
+    url: 'https://www.googleapis.com/customsearch/v1?key=AIzaSyA7iZi70URK1fsqkjyLVFSaiE1iXtRv7tk&fields=' + fields + '&cx=' + cx + '&q="' + question + '"'
+};
 
+function callback(error, response, body) {
+    if (response.statusCode != 200) {
+        console.log(response);
+    }
 
-request(formatted_url, function (error, response, body) {
-	if (error) {
-		console.log(error);
-	}
-	console.log(response);
+    if (!error && response.statusCode == 200) {
+        var results = JSON.parse(body);
+        console.log('query returned ' + results.items.length + ' items');
 
-	if (!error && response.statusCode == 200) {
-		var response = JSON.parse(body);
-		console.log(response);
-	}
-})
+        for (var i = 0; i < results.items.length; i++) {
+            console.log(results.items[i].title + ' - ' + results.items[i].snippet + '\n');
+        }
+    }
+}
 
 function print_usage() {
-	console.log('usage: 	-q 	"javascript undefined???"');
+    console.log('usage:   -q  "javascript undefined???"');
 }
+
+request(options, callback);
